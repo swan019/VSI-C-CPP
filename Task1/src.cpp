@@ -3,60 +3,110 @@
 #include <string>
 #include <cstdlib>
 #include <ctime>
+#include <cstdio> // For printf
+#include <sys/stat.h>
 
-#define FILE_SIZE    (10 * 1024 * 1024)  // 10MB
-#define LINE_LENGTH  80
+#define FILE_SIZE (10 * 1024 * 1024) // 10MB
+#define LINE_LENGTH 80
 
+using namespace std;
 
-// Returns a random letter (A-Z, a-z)
-char getRandomChar() {
-    const std::string letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
-    int index = std::rand() % letters.size();
-    return letters[index];
+char getRandomChar()
+{
+    const string letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+    return letters[rand() % letters.size()];
 }
 
-// Returns a random digit (0–9)
-char getRandomDigit() {
-    return '0' + (std::rand() % 10);
+char getRandomDigit()
+{
+    return '0' + (rand() % 10);
 }
 
-// Function to generate the file
-void generateFile(std::string& filename) {
-    std::ofstream file(filename, std::ios::binary);
-    if (!file) {
-        std::cout << "Failed to open file.\n";
+
+//to check file is already exist
+bool fileExists(string &filename)
+{
+    struct stat buffer;
+    return (stat(filename.c_str(), &buffer) == 0);
+}
+
+
+void generateFile(string &filename, string &mode)
+{
+    fstream file(filename, ios::out | ios::binary);
+    if (!file)
+    {
+        printf("Failed to open file.\n");
         return;
     }
 
     int count = 0;
-    while (count < FILE_SIZE) {
-        char ch;
-        if (count % LINE_LENGTH == LINE_LENGTH - 1) {
-            ch = '\n';
-        } else {
-            // Alternate lines: even = letters, odd = digits
-            if ((count / LINE_LENGTH) % 2 == 0)
-                ch = getRandomChar();
-            else
+    int lastPrintedMB = 0;  // To track how many MBs have been printed
+
+    while (count < FILE_SIZE)
+    {
+        for (int i = 0; i < LINE_LENGTH - 1; ++i)
+        {
+            char ch;
+            if (mode == "digit"){
                 ch = getRandomDigit();
+            }
+            else{
+                ch = getRandomChar();
+            }
+
+            file.put(ch);
+            ++count;
         }
+        file.put('\n');
+        ++count;
 
-        file.put(ch);
-        count++;
-
-        if (count % (1024 * 1024) == 0)
-            std::cout << "Written " << (count / (1024 * 1024)) << "MB...\n";
+        int currentMB = count / (1024 * 1024);
+        if (currentMB > lastPrintedMB)
+        {
+            printf("Written %dMB...\n", currentMB);
+            lastPrintedMB = currentMB;
+        }
     }
 
-    std::cout << "Finished writing 10MB to file: " << filename << "\n";
+    file.close();
+    printf("Finished writing 10MB to file: %s\n", filename.c_str());
 }
 
-int main() {
-    std::string filename;
-    std::cout << "Enter filename to generate random data: ";
-    std::cin >> filename;
 
-    generateFile(filename);
+void fileCreate()
+{
+    string filename, mode;
+    printf("Enter filename: ");
+    cin >> filename;
+
+    if (fileExists(filename))
+    {
+        printf("File '%s' already exists! Overwrite? (y/n): ", filename.c_str());
+        char choice;
+        cin >> choice;
+        if (choice != 'y' && choice != 'Y')
+        {
+            printf("Aborting file write.\n");
+            return;
+        }
+    }
+
+    printf("Enter mode (digit / char): ");
+    cin >> mode;
+
+    if (mode != "digit" && mode != "char")
+    {
+        printf("Invalid mode. Please enter 'digit' or 'char'.\n");
+        return;
+    }
+
+    generateFile(filename, mode);
+}
+
+int main()
+{
+    fileCreate();
 
     return 0;
 }
