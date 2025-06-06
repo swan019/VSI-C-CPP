@@ -2,10 +2,11 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdbool.h>
-#include "debugger.c"
+
 
 #define FILE_SIZE (10 * 1024 * 1024) // 10MB
-#define BUFFER_SIZE 1024 // 1KB buffer
+#define BUFFER_SIZE 10243            // 1KB buffer
+#define MB (1024 * 1024)             // 1MB
 
 // Generate a random alphabet character
 char getRandomChar()
@@ -31,46 +32,43 @@ bool generateFile(char *filename, char *mode)
         return false;
     }
 
-    char buffer[BUFFER_SIZE]; // 1KB buffer
+    char buffer[BUFFER_SIZE];
     size_t count = 0;
     int lastPrintedMB = 0;
     bool isDigit = strcmp(mode, "digit") == 0;
 
+    
+    for (size_t i = 0; i < BUFFER_SIZE; ++i)
+    {
+        buffer[i] = isDigit ? getRandomDigit() : getRandomChar();
+    }
+
+    
     while (count < FILE_SIZE)
     {
-        size_t bytesToWrite = (FILE_SIZE - count >= 1024) ? 1024 : (FILE_SIZE - count);
-
-        for (size_t i = 0; i < bytesToWrite; ++i)
-        {
-            if (isDigit){
-                buffer[i] = getRandomDigit();
-            } else {
-                buffer[i] = getRandomChar();
-            }
-        }
+        size_t bytesToWrite = (FILE_SIZE - count >= BUFFER_SIZE) ? BUFFER_SIZE : (FILE_SIZE - count);
 
         size_t written = fwrite(buffer, sizeof(char), bytesToWrite, file);
         if (written != bytesToWrite)
         {
-            printf("Write error occurred.\n");
+            printf("Write error.\n");
             fclose(file);
             file = NULL;
             return false;
         }
 
-        count += bytesToWrite;
+        count += written;
 
-        int currentMB = (int)(count / (1024 * 1024));
+        int currentMB = count / MB;
         if (currentMB > lastPrintedMB)
         {
             printf("Written %dMB...\n", currentMB);
             lastPrintedMB = currentMB;
         }
     }
-
     fclose(file);
     file = NULL;
-    printf("Finished writing %.2fMB to file: %s\n", (float)count / (1024 * 1024), filename);
+    printf("Finished writing %.2fMB to file: %s\n", (float)count / MB, filename);
     return true;
 }
 
