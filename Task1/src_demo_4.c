@@ -19,59 +19,21 @@ char getRandomDigit()
     return '0' + (rand() % 10);
 }
 
-void explainOpenError(char *filename)
-{
-    switch (errno)
-    {
-    case ENOENT:
-        printf("Error: File or directory does not exist: %s\n", filename);
-        break;
-    case EACCES:
-        printf("Error: Permission denied to access file: %s\n", filename);
-        break;
-    case EISDIR:
-        printf("Error: Target is a directory, not a file: %s\n", filename);
-        break;
-    case EMFILE:
-        printf("Error: Too many files open in process.\n");
-        break;
-    case ENAMETOOLONG:
-        printf("Error: File name too long.\n");
-        break;
-    default:
-        printf("fopen() failed. Error code: %d, message: %s\n", errno, strerror(errno));
-    }
-}
-
-void explainWriteError()
-{
-    switch (errno)
-    {
-    case ENOSPC:
-        printf("Error: No space left on device.\n");
-        break;
-    case EIO:
-        printf("Error: Low-level I/O error occurred.\n");
-        break;
-    default:
-        printf("fwrite() failed. Error code: %d, message: %s\n", errno, strerror(errno));
-    }
-}
 
 bool generateFile(char *filename, char *mode)
 {
     FILE *file = fopen(filename, "wb");
     if (!file)
     {
-        explainOpenError(filename);
+        printf("fopen failed for '%s' - [%d] %s\n", filename, errno, strerror(errno));
         return false;
     }
 
     char *buffer = (char *)malloc(BUFFER_SIZE);
-    
+
     if (!buffer)
     {
-        fprintf(stderr, "Memory allocation failed for buffer.\n");
+        printf("Memory allocation failed for buffer.\n");
         fclose(file);
         file = NULL;
         buffer = NULL;
@@ -102,7 +64,7 @@ bool generateFile(char *filename, char *mode)
 
         if (written != bytesToWrite)
         {
-            explainWriteError();
+            printf("fwrite failed - '%s' - [%d] %s\n", filename, errno, strerror(errno));
             fclose(file);
             free(buffer);
             file = NULL;
