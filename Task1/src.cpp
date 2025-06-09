@@ -3,7 +3,7 @@
 #include <string>
 #include <cstdlib>
 #include <ctime>
-#include <cstdio> // For printf
+#include <cstdio> 
 #include <sys/stat.h>
 
 #define FILE_SIZE (10 * 1024 * 1024) // 10MB

@@ -38,9 +38,18 @@ bool generateFile(char *filename, char *mode)
     bool isDigit = strcmp(mode, "digit") == 0;
 
     
-    for (size_t i = 0; i < BUFFER_SIZE; ++i)
+    bool isDigit = strcmp(mode, "digit") == 0;
+    if (isDigit)
     {
-        buffer[i] = isDigit ? getRandomDigit() : getRandomChar();
+        for (size_t i = 0; i < BUFFER_SIZE; ++i)
+        {
+            buffer[i] = getRandomDigit();
+        }
+    }else{
+        for (size_t i = 0; i < BUFFER_SIZE; ++i)
+        {
+            buffer[i] = getRandomChar();
+        }
     }
 
     

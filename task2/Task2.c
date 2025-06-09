@@ -1,14 +1,16 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
+#include <stdbool.h>
 
-#define CHUNK_SIZE 10 * 1024 * 1024 
+#define CHUNK_SIZE (10 * 1024 * 1024) // 10MB
+#define MB (1024 * 1024)
 
-void split_file(const char *input_filename) {
+bool split_file(char *input_filename) {
+    // Open input file
     FILE *input_file = fopen(input_filename, "rb");
     if (!input_file) {
-        perror("Error opening input file");
-        exit(EXIT_FAILURE);
+        printf("Error: Unable to open input file '%s'\n", input_filename);
+        return false;
     }
 
     // Get file size
@@ -16,74 +18,66 @@ void split_file(const char *input_filename) {
     long file_size = ftell(input_file);
     fseek(input_file, 0, SEEK_SET);
 
-    int chunk_number = 0;
-    long bytes_remaining = file_size;
-    char output_filename[256];
-
-    while (bytes_remaining > 0) {
-        // Create output filename
-        snprintf(output_filename, sizeof(output_filename), "%s.part%d", input_filename, chunk_number);
-
-        // Determine chunk size (last chunk may be smaller)
-        long current_chunk_size = (bytes_remaining > CHUNK_SIZE) ? CHUNK_SIZE : bytes_remaining;
-
-        // Open output file
-        FILE *output_file = fopen(output_filename, "wb");
-        if (!output_file) {
-            perror("Error opening output file");
-            fclose(input_file);
-            exit(EXIT_FAILURE);
-        }
-
-        // Buffer for reading/writing
-        char *buffer = (char*)malloc(current_chunk_size);
-        if (!buffer) {
-            perror("Memory allocation failed");
-            fclose(input_file);
-            fclose(output_file);
-            exit(EXIT_FAILURE);
-        }
-
-        // Read and write chunk
-        size_t bytes_read = fread(buffer, 1, current_chunk_size, input_file);
-        if (bytes_read != current_chunk_size) {
-            perror("Error reading input file");
-            free(buffer);
-            fclose(input_file);
-            fclose(output_file);
-            exit(EXIT_FAILURE);
-        }
-
-        size_t bytes_written = fwrite(buffer, 1, current_chunk_size, output_file);
-        if (bytes_written != current_chunk_size) {
-            perror("Error writing to output file");
-            free(buffer);
-            fclose(input_file);
-            fclose(output_file);
-            exit(EXIT_FAILURE);
-        }
-
-        // Clean up
-        free(buffer);
-        fclose(output_file);
-
-        // Update counters
-        bytes_remaining -= current_chunk_size;
-        chunk_number++;
-
-        printf("Created chunk: %s (%ld bytes)\n", output_filename, current_chunk_size);
+    // Allocate buffer once
+    char *buffer = (char *)malloc(CHUNK_SIZE);
+    if (!buffer) {
+        printf("Error: Memory allocation failed\n");
+        fclose(input_file);
+        return false;
     }
 
+    int chunk_number = 0;
+    long bytes_remaining = file_size;
+
+    while (bytes_remaining > 0) {
+        // Determine current chunk size
+        size_t current_chunk = bytes_remaining > CHUNK_SIZE ? CHUNK_SIZE : bytes_remaining;
+
+        // Read chunk
+        if (fread(buffer, 1, current_chunk, input_file) != current_chunk) {
+            printf("Error: Failed to read from input file\n");
+            break;
+        }
+
+        // Create output filename
+        char output_filename[256];
+        snprintf(output_filename, sizeof(output_filename), "%s.part%03d", input_filename, chunk_number++);
+
+        // Write chunk
+        FILE *output_file = fopen(output_filename, "wb");
+        if (!output_file) {
+            printf("Error: Could not create output file '%s'\n", output_filename);
+            break;
+        }
+
+        if (fwrite(buffer, 1, current_chunk, output_file) != current_chunk) {
+            printf("Error: Failed to write to output file '%s'\n", output_filename);
+            fclose(output_file);
+            break;
+        }
+
+        fclose(output_file);
+        printf("Created %s (%.2f MB)\n", output_filename, (double)current_chunk / MB);
+        bytes_remaining -= current_chunk;
+    }
+
+    free(buffer);
     fclose(input_file);
-    printf("File split completed. Total chunks: %d\n", chunk_number);
+    printf("Done. Created %d chunks.\n", chunk_number);
+    return true;
 }
 
 int main(int argc, char *argv[]) {
     if (argc != 2) {
-        printf("Usage: %s <input_file>\n", argv[0]);
-        return EXIT_FAILURE;
+        printf("Usage: %s <filename>\n", argv[0]);
+        return 1;
     }
 
-    split_file(argv[1]);
-    return EXIT_SUCCESS;
+    bool isFilesSplit = split_file(argv[1]);
+    if (!isFilesSplit) {
+        printf("File splitting failed.\n");
+        return 1;
+    }
+
+    return 0;
 }
