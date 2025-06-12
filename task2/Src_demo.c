@@ -5,16 +5,10 @@
 #include <string.h>
 #include <sys/stat.h>
 
-#define CHUNK_SIZE (10 * 1024 * 1024) // 10MB
-#define MB (1024 * 1024)
+#define ONEKB (1024)
+#define ONEMB (ONEKB * 1024)
+#define TENMB (ONEMB * 10) // 10MB
 #define MAX_FILENAME_LEN 256
-
-bool FileExist(char *fileName)
-{
-    struct stat buffer;
-    bool isExist = stat(fileName, &buffer) == 0;
-    return (isExist);
-}
 
 bool SplitFile(char *fileName)
 {
@@ -39,7 +33,8 @@ bool SplitFile(char *fileName)
 //--------------------------------------------------------------------------------------------------------------
 
 //------------------------------ Allocate buffer for read from main file----------------------------------------- 
-    char *buffer = (char *)malloc(CHUNK_SIZE);
+    char *buffer = (char *)malloc(TENMB*sizeof(char));
+    printf("buffer size : %d", sizeof(*buffer));
 
     if (!buffer)
     {
@@ -52,13 +47,36 @@ bool SplitFile(char *fileName)
 
 //------------------------------------------ Create output filename-----------------------------------------------
     char output_filename[MAX_FILENAME_LEN];
-    int filename_len = strlen(fileName);
-    int base_len = filename_len > 4 ? filename_len - 4 : 0;
+    char *dot = strrchr(fileName, '.');  
+
+    int base_len;
+    if (dot != NULL) {
+        base_len = dot - fileName;  
+    } else {
+        base_len = strlen(fileName); 
+    }
     char base_name[MAX_FILENAME_LEN];
     strncpy(base_name, fileName, base_len);
-    base_name[base_len] = '\0'; 
+    base_name[base_len] = '\0';
 
-    //filename.txt -> filename
+    const char *ext;
+    if (dot != NULL) {
+        ext = dot;  
+    } else {
+        ext = "";   
+    }
+
+/*
+
+    Example 1: file.txt
+    fileName = "file.txt"
+    dot points to ".txt"
+    base_len = 4 (index of dot)
+    base_name = "file"
+    ext = ".txt"
+
+*/
+
 //----------------------------------------------------------------------------------------------------------------
 
 
@@ -72,8 +90,8 @@ bool SplitFile(char *fileName)
     
     while (bytes_remaining > 0)
     {    
-        if (bytes_remaining >= CHUNK_SIZE) {
-            current_chunk = CHUNK_SIZE;  //Take full chunk if enough data remains
+        if (bytes_remaining >= TENMB) {
+            current_chunk = TENMB;  //Take full chunk if enough data remains
         }
         else {
             current_chunk = bytes_remaining; //Take remaining data for final partial chunk 
@@ -91,7 +109,7 @@ bool SplitFile(char *fileName)
             return false;
         }
 //--------------------------------------------------------------------------------------------------------------------------
-        sprintf(output_filename, "%s_part%03d.txt", base_name, chunk_number++); // filename_part001.txt
+        sprintf(output_filename, "%s_part%03d%s", base_name, chunk_number++, ext); // filename_part001.txt
 
         output_file = fopen(output_filename, "wb");
         if (!output_file)
@@ -123,7 +141,7 @@ bool SplitFile(char *fileName)
 
 //-------------------------------------------------------------------------------------------------------------------------
 
-        printf("Created %s (%.2f MB)\n", output_filename, (double)current_chunk / MB);
+        printf("Created %s (%.2f MB)\n", output_filename, (double)current_chunk / ONEMB);
         bytes_remaining -= current_chunk;
     }
 
@@ -144,11 +162,6 @@ int main(int argc, char *argv[])
     }
 
     char *filename = argv[1];
-    if (!FileExist(filename))  // To cheak file exist
-    {
-        printf("File not present in current directory.\n");
-        return 1;
-    }
 
     if (!SplitFile(filename))
     {
