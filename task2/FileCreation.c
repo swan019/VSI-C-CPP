@@ -3,8 +3,11 @@
 #include <cstring>
 #include <errno.h>
 
-#define CHUNK_SIZE (10 * 1024 * 1024)
+#define KB 1024
+#define MB (KB * 1024)
+#define TEN_MB (MB * 10)
 #define TOTAL_CHUNKS 10
+#define ZERO_CHAR '0'
 
 bool FileGenerate(char *filename)
 {
@@ -15,7 +18,7 @@ bool FileGenerate(char *filename)
         return false;
     }
 
-    char *buffer = (char *)malloc(CHUNK_SIZE);
+    char *buffer = (char *)malloc(TEN_MB);
 
     if (!buffer)
     {
@@ -24,18 +27,18 @@ bool FileGenerate(char *filename)
         return false;
     }
 
-    memset(buffer, '0', sizeof(char) * CHUNK_SIZE);
+    memset(buffer, ZERO_CHAR , sizeof(char) * TEN_MB);
     char fill_char;
     size_t bytes_written;
 
     for (int i = 0; i < TOTAL_CHUNKS; i++)
     {
-        fill_char = '0' + i;
-        memset(buffer, fill_char, sizeof(char) * CHUNK_SIZE);
+        fill_char = ZERO_CHAR + i;
+        memset(buffer, fill_char, sizeof(char) * TEN_MB);
         
-        bytes_written = fwrite(buffer, 1, CHUNK_SIZE, fp);
+        bytes_written = fwrite(buffer, sizeof(char), TEN_MB, fp);
 
-        if (bytes_written != CHUNK_SIZE)
+        if (bytes_written != TEN_MB)
         {
             fprintf(stderr, "fwrite failed - '%s' - [%d] %s\n", filename, errno, strerror(errno));
             free(buffer);
@@ -46,7 +49,7 @@ bool FileGenerate(char *filename)
         printf("Written 10MB of '%c'\n", fill_char);
     }
 
-    memset(buffer, '0', sizeof(char) * CHUNK_SIZE);
+    memset(buffer, ZERO_CHAR, sizeof(char) * TEN_MB);
     free(buffer);
     buffer = NULL;
     fclose(fp);
