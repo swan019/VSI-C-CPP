@@ -34,8 +34,6 @@ bool SplitFile(char *fileName)
 
 //------------------------------ Allocate buffer for read from main file----------------------------------------- 
     char *buffer = (char *)malloc(TENMB*sizeof(char));
-    printf("buffer size : %d", sizeof(*buffer));
-
     if (!buffer)
     {
         printf("Buffer memory allocation failed.\n");
@@ -59,11 +57,11 @@ bool SplitFile(char *fileName)
     strncpy(base_name, fileName, base_len);
     base_name[base_len] = '\0';
 
-    const char *ext;
+    const char *extension;
     if (dot != NULL) {
-        ext = dot;  
+        extension = dot;  
     } else {
-        ext = "";   
+        extension = "";   
     }
 
 /*
@@ -109,7 +107,7 @@ bool SplitFile(char *fileName)
             return false;
         }
 //--------------------------------------------------------------------------------------------------------------------------
-        sprintf(output_filename, "%s_part%03d%s", base_name, chunk_number++, ext); // filename_part001.txt
+        sprintf(output_filename, "%s_part%03d%s", base_name, chunk_number++, extension); // filename_part001.txt
 
         output_file = fopen(output_filename, "wb");
         if (!output_file)

@@ -64,6 +64,8 @@ bool SplitFile(char *fileName)
 
     int chunk_number = 0;
     long bytes_remaining = file_size;
+
+    
     while (bytes_remaining > 0)
     {
         size_t current_chunk = 0;    
