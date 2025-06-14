@@ -23,7 +23,8 @@ bool SplitFile(char *fileName)
     int seek = fseek(inputFile, 0, SEEK_END);
     if (seek != 0)
     {
-        fprintf(stderr, "Error seeking in file '%s' - [%d] %s\n", inputFile, errno, strerror(errno));
+        fprintf(stderr, "Error seeking in file '%s' - [%d] %s\n", 
+                inputFile, errno, strerror(errno));
         fclose(inputFile);
         inputFile = NULL;
         return false;

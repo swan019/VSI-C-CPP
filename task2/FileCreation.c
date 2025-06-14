@@ -18,7 +18,7 @@ bool FileGenerate(char *filename)
         return false;
     }
 
-    char *buffer = (char *)malloc(TEN_MB);
+    char *buffer = (char *)malloc(TEN_MB*sizeof(char));
 
     if (!buffer)
     {
@@ -27,13 +27,16 @@ bool FileGenerate(char *filename)
         return false;
     }
 
-    memset(buffer, ZERO_CHAR , sizeof(char) * TEN_MB);
+    memset(buffer, '\0' , sizeof(char) * TEN_MB);
     char fill_char;
     size_t bytes_written;
 
+
+
+
     for (int i = 0; i < TOTAL_CHUNKS; i++)
     {
-        fill_char = ZERO_CHAR + i;
+        fill_char = ZERO_CHAR + i;  // '0' + 0 -> '0' 
         memset(buffer, fill_char, sizeof(char) * TEN_MB);
         
         bytes_written = fwrite(buffer, sizeof(char), TEN_MB, fp);
@@ -48,8 +51,6 @@ bool FileGenerate(char *filename)
 
         printf("Written 10MB of '%c'\n", fill_char);
     }
-
-    memset(buffer, ZERO_CHAR, sizeof(char) * TEN_MB);
     free(buffer);
     buffer = NULL;
     fclose(fp);
