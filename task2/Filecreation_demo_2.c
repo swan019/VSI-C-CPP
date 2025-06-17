@@ -4,14 +4,14 @@
 #include <string.h>
 #include <errno.h>
 
-#define KB 1024
-#define MB (1024 * KB)
+#define ONEKB 1024
+#define ONEMB (1024 * KB)
 #define TOTALMB 10
-#define BUFFERSIZE KB
+#define BUFFERSIZE ONEKB
 
 
 bool FileGenerate(char* fileName) {
-	FILE* file = fopen(fileName, "wb");
+	FILE* pfile = fopen(fileName, "wb");
 	if (!file) {
 		fprintf(stderr, "Error: Failed to open file - [%d] %s\n", 
 				errno, strerror(errno));
@@ -19,7 +19,7 @@ bool FileGenerate(char* fileName) {
 	}
 
 	char* buffer = (char*)malloc(sizeof(char) * BUFFERSIZE);
-	if (!buffer) {
+	if (NULL != buffer) {
 		fprintf(stderr, "Error: Failed to allocate memory - [%d] %s\n", 
 				errno, strerror(errno));
 		fclose(file);
@@ -28,7 +28,7 @@ bool FileGenerate(char* fileName) {
 	}
 
 	memset(buffer, '\0', KB);
-	char character;
+	char ch;
 	for (int i = 0; i < TOTALMB; i++) { 
 		character = 'a' + i;
 		memset(buffer, character, KB);

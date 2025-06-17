@@ -69,7 +69,6 @@ Node* FileToLinkedList(char* fileName) {
 	while (1) {
 		//read 1KB from file
 		size_t bytes_read = fread(buffer, sizeof(char), BUFFERSIZE, file);
-
 		if (bytes_read == 0) {
 			if (feof(file)) break;
 			if (ferror(file)) {
@@ -114,9 +113,6 @@ Node* FileToLinkedList(char* fileName) {
 		current->size += copy_size;
 		total_bytes += copy_size;
 
-		if (copy_size < bytes_read) {
-			printf("Buffer exceeded node capacity\n");
-		}
 	}
 
 	fclose(file);
