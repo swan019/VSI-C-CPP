@@ -1,12 +1,12 @@
-#define _CRT_SECURE_NO_WARNINGS
 #include "Header.h"
 #include <fstream>
 #include <iostream>
 #include <cstring>
 #include <cerrno>
 #include <cstdio>
+#include <windows.h>
 
-Node* createNode() {
+Node* createNewNode() {
     Node* p_newNode = new Node;
     p_newNode->data = new char[ONE_MB];
     p_newNode->size = 0;
@@ -14,7 +14,7 @@ Node* createNode() {
     return p_newNode;
 }
 
-void freeList(Node* head) {
+void freeNodeList(Node* head) {
     while (head) {
         Node* next = head->next;
         delete[] head->data;
@@ -23,11 +23,14 @@ void freeList(Node* head) {
     }
 }
 
-Node* fileToLinkedList(char* fileName) {
-	FILE* file = fopen(fileName, "rb");
-	if (!file) {
+Node* readFileToNodeList(char* fileName) {
+	FILE* file = NULL;
+	errno_t err = fopen_s(&file, fileName, "rb");
+	if (err != 0 || file == NULL) {
+		char errorMsg[MAX_LEN];
+		strerror_s(errorMsg, sizeof(errorMsg), errno);
 		fprintf(stderr, "Error : File opening [%d], %s",
-			errno, strerror(errno));
+			errno, errorMsg);
 		return NULL;
 	}
 
@@ -42,18 +45,20 @@ Node* fileToLinkedList(char* fileName) {
 		if (bytes_read == 0) {
 			if (feof(file)) break;
 			if (ferror(file)) {
+				char errorMsg[MAX_LEN];
+				strerror_s(errorMsg, sizeof(errorMsg), errno);
 				fprintf(stderr, "Error: Reading file '%s' failed [%d] %s\n",
-					fileName, errno, strerror(errno));
-				freeList(head);
+					fileName, errno, errorMsg);
+				freeNodeList(head);
 				fclose(file);
 				return NULL;
 			}
 		}
 
 		if (!current || current->size == ONE_MB) {
-			Node* newNode = createNode();
+			Node* newNode = createNewNode();
 			if (!newNode) {
-				freeList(head);
+				freeNodeList(head);
 				fclose(file);
 				return NULL;
 			}
@@ -89,7 +94,7 @@ Node* fileToLinkedList(char* fileName) {
 	return head;
 }
 
-bool writeAllNodes(Node* head) {
+bool writeNodesToFiles(Node* head) {
 	Node* p_currentNode = head;
 	size_t nodeCounter = 0;
 	char fileName[MAX_FILENAME_LEN];
@@ -98,43 +103,50 @@ bool writeAllNodes(Node* head) {
 
 		snprintf(fileName, MAX_FILENAME_LEN, "%s%zu%s", FILE_PRIFIX, nodeCounter++, FILE_SUFFIX);
 
-		FILE* outFile = fopen(fileName, "wb");
-		if (outFile == NULL) {
+		FILE* outputFile = NULL;
+		errno_t err = fopen_s(&outputFile, fileName, "wb");
+		if (err != 0 ||  outputFile == NULL) {
+			char errorMsg[MAX_LEN];
+			strerror_s(errorMsg, sizeof(errorMsg), errno);
 			fprintf(stderr, "Error: Failed to create file '%s' - [%d] %s\n",
-				fileName, errno, strerror(errno));
+				fileName, errno, errorMsg);
 			return false;
 		}
 
-		size_t written = fwrite(p_currentNode->data, 1, p_currentNode->size, outFile);
+		size_t written = fwrite(p_currentNode->data, 1, p_currentNode->size, outputFile);
 		if (written != p_currentNode->size) {
+
+			char errorMsg[MAX_LEN];
+			strerror_s(errorMsg, sizeof(errorMsg), errno);
 			fprintf(stderr, "Error: Failed to write to file '%s' - [%d] %s\n",
-				fileName, errno, strerror(errno));
-			fclose(outFile);
+				fileName, errno, errorMsg);
+			fclose(outputFile);
+
 			return false;
 		}
 
 		printf("Saved: %s (%zu bytes)\n", fileName, p_currentNode->size);
 
-		fclose(outFile);
+		fclose(outputFile);
 		p_currentNode = p_currentNode->next;
 	}
 
 	return true;
 }
 
-bool splitFile(char* inputFile) {
-	Node* p_list = fileToLinkedList(inputFile);
+bool splitFileToMultipleChunks(char* inputFile) {
+	Node* p_list = readFileToNodeList(inputFile);
 	if (!p_list) {
 		fprintf(stderr, "Error: Failed to convert file to linked list.\n");
 		return false;
 	}
 
-	bool success = writeAllNodes(p_list);
+	bool success = writeNodesToFiles(p_list);
 	if (!success) {
 		fprintf(stderr, "Error: Failed to write nodes to output.\n");
 	}
 
-	freeList(p_list);
+	freeNodeList(p_list);
 	return success;
 }
 
@@ -146,7 +158,7 @@ int main(int argc, char* argv[]) {
 
 	char* inputFile = argv[1];
 
-	bool isFileSplit = splitFile(inputFile);
+	bool isFileSplit = splitFileToMultipleChunks(inputFile);
 	if (isFileSplit == false) {
 		fprintf(stderr, "Error: File generation failed for '%s'.\n", inputFile);
 		return 1;

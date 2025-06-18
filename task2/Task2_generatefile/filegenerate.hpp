@@ -2,6 +2,10 @@
 #define FILE_GENERATE_HPP
 
 #include <string>
+#include <fstream>
+#include <iostream>
+#include <cstring>
+#include <cerrno>
 using namespace std;
 
 #define ONE_KB 1024

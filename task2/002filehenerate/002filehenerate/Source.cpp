@@ -1,25 +1,28 @@
-#define _CRT_SECURE_NO_WARNINGS
-
 #include "Header.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdbool.h>
 #include <string.h>
 #include <errno.h>
+#include <windows.h>
 
 bool generateFile(char* fileName) {
-    FILE* pFile;
-    pFile = fopen(fileName, "wb");
-    if (!pFile) {
-        fprintf(stderr, "Error: Failed to open file - [%d] %s\n",
-            errno, strerror(errno));
+    FILE* pFile = NULL;
+    errno_t err = fopen_s(&pFile, fileName, "wb");
+    if (err != 0 || pFile == NULL) {
+        char errorMsg[MAX_LEN];
+        strerror_s(errorMsg, sizeof(errorMsg), errno);
+        fprintf(stderr, "Error: Failed to open file - [%d] %s\n", 
+                errno, errorMsg);
         return false;
     }
 
     char* chBuffer = (char*)malloc(sizeof(char) * ONE_KB);
     if (chBuffer == NULL) {
-        fprintf(stderr, "Error: Failed to allocate memory - [%d] %s\n",
-            errno, strerror(errno));
+        char errorMsg[MAX_LEN];
+        strerror_s(errorMsg, sizeof(errorMsg), errno);
+        fprintf(stderr, "Error: Failed to allocate memory - [%d] %s\n", 
+                errno, errorMsg);
         fclose(pFile);
         return false;
     }
@@ -31,8 +34,10 @@ bool generateFile(char* fileName) {
         for (int j = 0; j < ONE_MB / ONE_KB; ++j) {
             size_t written = fwrite(chBuffer, sizeof(char), ONE_KB, pFile);
             if (written != ONE_KB) {
+                char errorMsg[MAX_LEN];
+                strerror_s(errorMsg, sizeof(errorMsg), errno);
                 fprintf(stderr, "Error: Failed to write to file at %dMB block [%d] %s\n",
-                    i + 1, errno, strerror(errno));
+                         i + 1, errno, errorMsg);
                 free(chBuffer);
                 fclose(pFile);
                 return false;
