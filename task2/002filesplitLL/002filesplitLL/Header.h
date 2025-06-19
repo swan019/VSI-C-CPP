@@ -9,15 +9,19 @@ using namespace std;
 #define FILE_SUFFIX ".txt"
 #define MAX_FILENAME_LEN 256
 #define MAX_LEN 256
+#define ERROR_MESSAGE_MAX_LEN 256
+#define OUTPUT_DIR "x64\\Debug\\"
+#define ZERO 0
+
 
 typedef struct Node {
-	char* data;				//pointer to point 1MB data block
-	size_t size;			//current data size in this block
-	struct Node* next;		//pointer to next node
+	char* chData;				
+	size_t sizeOfNodeBuffer;
+	struct Node* next;		
 } Node;
 
 Node* createNewNode();
 void freeNodeList(Node* head);
 Node* readFileToNodeList(char* fileName);
 bool writeNodesToFiles(Node* head);
-bool splitFileToMultipleChunks(char* inputFile);
+bool splitFileToMultipleChunks(char* inputFile); 
