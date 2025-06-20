@@ -1,10 +1,4 @@
 #include "Header.h"
-#include <fstream>
-#include <iostream>
-#include <cstring>
-#include <cerrno>
-#include <cstdio>
-#include <windows.h>
 
 Node* createNewNode() {
 	Node* p_newNode = new Node;
@@ -43,7 +37,7 @@ Node* readFileToNodeList(char* fileName) {
 	size_t node_count = 0;
 
 	while (1) {
-		size_t bytes_read = fread(chBuffer, sizeof(char), ONE_KB, pFileToList);
+		size_t bytes_read = fread_s(chBuffer,ONE_KB, sizeof(char), ONE_KB, pFileToList);
 		if (bytes_read == ZERO) {
 			if (feof(pFileToList)) break;
 			if (ferror(pFileToList)) {

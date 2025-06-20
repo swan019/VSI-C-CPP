@@ -1,5 +1,11 @@
 #pragma once
 #include <string>
+#include <fstream>
+#include <iostream>
+#include <cstring>
+#include <cerrno>
+#include <cstdio>
+#include <windows.h>
 
 using namespace std;
 
@@ -19,6 +25,8 @@ typedef struct Node {
 	size_t sizeOfNodeBuffer;
 	struct Node* next;		
 } Node;
+
+
 
 Node* createNewNode();
 void freeNodeList(Node* head);
