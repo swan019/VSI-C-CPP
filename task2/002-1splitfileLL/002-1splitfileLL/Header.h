@@ -11,8 +11,10 @@ using namespace std;
 #define ONEMB (ONEKB * ONEKB)
 #define FILEPRIFIX "node_"
 #define FILESUFFIX ".txt"
-#define MAXLEN 256
+#define MAXFILELEN 256
+#define MAXERRMSGLEN 512
 #define OUTPUTDIR "x64\\Debug\\"
+
 
 typedef struct Node {
 	char* chData;
@@ -20,13 +22,14 @@ typedef struct Node {
 } Node;	
 
 typedef Node* PNODE;
+typedef PNODE* DPNODE;
 
 int TOTALNODE = 0;
 PNODE createNewNode();
 void freeNodeList(PNODE headOfList);
 
-bool insertNodeAtFirst(PNODE headOfList, PNODE currentNewNode);
-bool insertNodeAtLast(PNODE tailOfList, PNODE currentNewNode);
+bool insertNodeAtFirst(DPNODE headOfList, char* chBuffer[]);
+bool insertNodeAtLast(DPNODE tailOfList, char* chBuffer[]);
 
 void displayDataOfNode(PNODE);
 void displayDataOfNNode(PNODE, int nodeIndex);
