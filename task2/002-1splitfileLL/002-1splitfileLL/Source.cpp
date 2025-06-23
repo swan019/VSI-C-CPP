@@ -30,21 +30,6 @@ void freeNodeList(PNODE headOfList)
     }
 }
 
-void displayDataOfNode(PNODE nodeOfList)
-{
-    if (nodeOfList == NULL)
-    {
-        fprintf(stderr, "Error : Node is NULL.\n");
-        return;
-    }
-    printf("Node contains %d byte : \n", ONEMB);
-    for (size_t i = 0; i < ONEMB; i++)
-    {
-        printf("%c", nodeOfList->chData[i]);
-    }
-    printf("\n");
-    return;
-}
 
 void displayEachNodeChData(PNODE headOfList)
 {
@@ -175,8 +160,8 @@ PNODE readFileToNodeList(char* fileName)
             countOfListNode += 1;
         }
 
-        if (bytesReadFromFile < ONEMB)
-            break;
+        //if (bytesReadFromFile < ONEMB)
+        //    break;
     }
 
     fclose(pFileToList);
