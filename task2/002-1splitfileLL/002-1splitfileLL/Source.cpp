@@ -2,8 +2,19 @@
 
 PNODE createNewNode()
 {
-    PNODE pNode = new Node;
-    pNode->chData = new char[ONEMB * sizeof(char)];
+    PNODE pNode = (PNODE)malloc(sizeof(Node));
+    if (!pNode)
+    {
+        fprintf(stderr, "Error: Failed to allocate memory for Node.\n");
+        return NULL;
+    }
+    pNode->chData = (char*)malloc((ONEMB + 1) * sizeof(char));
+    if (!pNode->chData)
+    {
+        fprintf(stderr, "Error: Failed to allocate memory for chData.\n");
+        free(pNode);
+        return NULL;
+    }
     pNode->next = NULL;
     return pNode;
 }
@@ -13,8 +24,8 @@ void freeNodeList(PNODE headOfList)
     while (headOfList)
     {
         PNODE next = headOfList->next;
-        delete[] headOfList->chData;
-        delete headOfList;
+        free(headOfList->chData);
+        free(headOfList);
         headOfList = next;
     }
 }
@@ -61,18 +72,16 @@ void displayDataOfNNode(PNODE headOfList, int nodeIndex)
         return;
     }
     printf("Node contains %d byte : \n", ONEMB);
-    for (size_t i = 0; i < ONEMB; i++)
-    {
-        printf("%c", currentNode->chData[i]);
-    }
+    printf("%s", currentNode->chData);
     printf("\n");
 }
 
 bool insertNodeAtFirst(DPNODE headOfList, char chBuffer[])
 {
-    PNODE newNode= createNewNode();
-    if (newNode == NULL) {
-        
+    PNODE newNode = createNewNode();
+    if (newNode == NULL)
+    {
+
         return false;
     }
     memcpy(newNode->chData, chBuffer, ONEMB);
@@ -86,12 +95,13 @@ bool insertNodeAtFirst(DPNODE headOfList, char chBuffer[])
 bool insertNodeAtLast(DPNODE headOfList, DPNODE tailOfList, char chBuffer[])
 {
     PNODE newNode = createNewNode();
-    if (newNode == NULL) 
+    if (newNode == NULL)
     {
         return false;
     }
 
     memcpy(newNode->chData, chBuffer, ONEMB);
+    newNode->chData[ONEMB] = '\0';
 
     if (*headOfList == NULL)
     {
@@ -121,13 +131,18 @@ PNODE readFileToNodeList(char* fileName)
         return NULL;
     }
 
-    PNODE headOfList = NULL;
-    PNODE currentNode = NULL;
-    PNODE tailOfList = NULL;
+    PNODE headOfList    =  NULL;
+    PNODE currentNode   =  NULL;
+    PNODE tailOfList    =  NULL;
 
     int countOfListNode = 0;
-    char* chBuffer = new char[ONEMB];
-
+    char* chBuffer      = (char*)malloc(ONEMB * sizeof(char));
+    if (!chBuffer)
+    {
+        fprintf(stderr, "Error: chBuffer Memory allocation failed.\n");
+        return NULL;
+    }
+    memset(chBuffer, 0, ONEMB);
     while (true)
     {
         size_t bytesReadFromFile = fread_s(chBuffer, ONEMB, sizeof(char), ONEMB, pFileToList);
@@ -149,7 +164,8 @@ PNODE readFileToNodeList(char* fileName)
         else
         {
             bool status = insertNodeAtLast(&headOfList, &tailOfList, chBuffer);
-            if (!status) {
+            if (!status)
+            {
                 fprintf(stderr, "Error: Insert node at last failed.\n");
                 freeNodeList(headOfList);
                 fclose(pFileToList);
@@ -164,7 +180,8 @@ PNODE readFileToNodeList(char* fileName)
     }
 
     fclose(pFileToList);
-    delete[] chBuffer;
+    free(chBuffer);
+    chBuffer = NULL;
     printf("Created %d nodes.\n", countOfListNode);
     return headOfList;
 }
@@ -219,6 +236,12 @@ bool splitFileToMultipleChunks(char* pchInputFile)
     }
 
     displayEachNodeChData(pList);
+
+    int nodeNo;
+    printf("Enter which Node Data want to see : ");
+    scanf_s("%d", &nodeNo);
+
+    displayDataOfNNode(pList, nodeNo);
 
     bool isWriteSuccessful = writeNodesToFiles(pList);
 
