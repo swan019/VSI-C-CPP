@@ -1,4 +1,5 @@
 #include "Header.h"
+
 PNODE CreateNewNode()
 {
 	PNODE pNode = (PNODE)malloc(sizeof(Node));

@@ -1,0 +1,5 @@
+LIBRARY "MathLib"
+EXPORTS
+    Add
+    Subtract
+    Multiply

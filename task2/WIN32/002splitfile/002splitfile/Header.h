@@ -8,7 +8,7 @@
 using namespace std;
 
 #define ONEKB 1024
-#define ONEMB (ONEKB * ONEKB)
+#define ONEMB (1000 * ONEKB)
 #define FILEPRIFIX "node_"
 #define FILESUFFIX ".txt"
 #define MAXFILELEN 256
@@ -32,5 +32,5 @@ bool InsertNodeAtFirst(DPNODE headOfList, char* chBuffer[]);
 bool InsertNodeAtLast(DPNODE tailOfList, char* chBuffer[]);
 
 PNODE ReadFileToNodeList(char* fileName);
-bool WriteNodesToFiles(PNODE head);
+bool WriteNodeToFiles(PNODE head);
 bool SplitFileToMultipleChunks(char* inputFile);
