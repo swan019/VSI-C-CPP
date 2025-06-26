@@ -2,8 +2,11 @@
 
 typedef int (*MATHFUNC)(int, int);
 
+
+
 int main() {
 
+    const wchar_t* fileName = L"C:\\Users\\SWAPNIL\\Desktop\\ANT\\VSI\\Tasks\\Dll\\Dll1\\x64\\Debug\\Dll1.dll";
     HMODULE hModule = LoadLibraryW(fileName);
     if (hModule == NULL) {
         fprintf(stderr, "LoadLibrary failed. Error: (%lu)\n", GetLastError());

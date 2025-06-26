@@ -1,0 +1,7 @@
+LIBRARY "MathLib"
+EXPORTS
+    MathLib_Add @1
+    MathLib_Subtract    @2
+    MathLib_Multiply    @3
+    MathLib_Divide  @4
+
