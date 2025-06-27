@@ -1,7 +1,6 @@
 #include "Header.h"
 
 int main(int argc, char* argv[]) {
-    printf("[DynamicClient] Loading MathLib.dll at runtime\n");
 
     char* dllPathStr = argv[1];
     int iNumA = stoi(argv[2]);
